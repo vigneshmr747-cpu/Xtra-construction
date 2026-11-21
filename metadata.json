@@ -1,0 +1,6 @@
+{
+  "name": "XTRA Construction",
+  "description": "Building, engineering, and infrastructure construction showcase with interactive project portfolio, services, process timeline, and quote request.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
