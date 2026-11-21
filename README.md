@@ -1,60 +1,272 @@
-# XTRA Construction — Landing Page Recreation
+# XTRA Construction — Building & Engineering Excellence
 
-## Project Overview
-A responsive, production-grade React + TypeScript recreation of the **XTRA Construction 2** homepage architecture (`https://xtratheme.com/elementor/construction-2/`). The application reproduces the complete vertical flow, color palette (`#243344` deep slate navy and `#f4c03b` construction gold), asymmetric overlapping geometry, 3D interactive flip cards, filterable project gallery, validated quote form, testimonial carousel, and responsive mobile drawer.
+A responsive, production-grade React + TypeScript application recreating the **XTRA Construction 2** corporate architectural showcase. The application features asymmetric overlapping geometry, 3D interactive flip cards, a filterable project gallery with modal lightboxes, client-side validated quote forms, interactive engineering showreel modals, and responsive mobile navigation.
 
-## Technology Used
-- **Framework:** React 19 + TypeScript 7
-- **Build Tool:** Vite 8
+Live Website: [https://vigneshmr747-cpu.github.io/Xtra-construction/](https://vigneshmr747-cpu.github.io/Xtra-construction/)
+
+---
+
+## Table of Contents
+1. [Tech Stack](#tech-stack)
+2. [Prerequisites](#prerequisites)
+3. [Setup & Installation Instructions](#setup--installation-instructions)
+4. [Environment Configuration Details](#environment-configuration-details)
+5. [Brief API Documentation](#brief-api-documentation)
+6. [Project Structure](#project-structure)
+7. [Deployment Instructions](#deployment-instructions)
+
+---
+
+## Tech Stack
+- **Framework:** React 19 + TypeScript
+- **Build Tool & Dev Server:** Vite 8
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/vite`)
 - **Icons:** Lucide React + custom architectural SVG emblems
 - **Typography:** Google Fonts (`Poppins` for display headings, `Open Sans` for body copy)
+- **CI/CD:** GitHub Actions for automated deployment to GitHub Pages
 
-## Dependencies
-Key runtime packages declared in `package.json`:
-- `react` (`^19.0.1`) & `react-dom` (`^19.0.1`)
-- `lucide-react` (`^0.546.0`)
-- `@tailwindcss/vite` (`^4.3.3`) & `tailwindcss` (`^4.3.3`)
-- `vite` (`^8.3.0`) & `@vitejs/plugin-react` (`^6.1.1`)
-- `typescript` (`^7.0.2`)
+---
 
-## Installation Instructions
+## Prerequisites
+Before running or building the project, ensure you have:
+- **Node.js:** v18.0.0 or higher (v20+ recommended)
+- **npm:** v9.0.0 or higher (bundled with Node.js)
+- **Git**
+
+---
+
+## Setup & Installation Instructions
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/vigneshmr747-cpu/Xtra-construction.git
+cd Xtra-construction
+```
+
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-## Development Command
+### 3. Environment Setup
+Copy the example environment configuration:
+```bash
+# On Linux / macOS / Git Bash:
+cp .env.example .env
+
+# On Windows PowerShell:
+Copy-Item .env.example .env
+```
+
+### 4. Run the Development Server
 ```bash
 npm run dev
 ```
-Runs the Vite development server on port `3000`.
+- Starts the Vite local server with Hot Module Replacement (HMR).
+- Default URL: [http://localhost:3000](http://localhost:3000) (or `http://localhost:3001` if port 3000 is occupied).
 
-## Build Command
+### 5. Build for Production
 ```bash
 npm run build
 ```
-Generates the optimized static production bundle in `dist/` (and automatically mirrors `src/assets/` into `dist/src/assets/`).
+- Compiles TypeScript and packages assets into the optimized static `dist/` directory.
+- Runs unbundled asset synchronization for production asset resolution.
+
+### 6. Preview Production Build
+```bash
+npm run preview
+```
+- Serves the built `dist/` bundle on a local HTTP server for staging review.
+
+### 7. Lint and Typecheck
+```bash
+npm run lint
+```
+- Runs `tsc --noEmit` to validate all TypeScript types and module declarations.
+
+---
+
+## Environment Configuration Details
+
+The project utilizes environment variables defined in `.env` (or `.env.local` for local secrets):
+
+| Variable Name | Required | Default / Example | Purpose & Description |
+| :--- | :---: | :--- | :--- |
+| `GEMINI_API_KEY` | Optional | `AIzaSy...` | API key for server-side Google Gemini AI calls (e.g. intelligent estimate estimation or construction assistant). |
+| `APP_URL` | Optional | `http://localhost:3000` | The public base URL of the application. Used for absolute link generation, OAuth callbacks, and self-referential metadata. |
+| `VITE_CONFIG_NATIVE_IGNORE_WARNING` | Optional | `true` | Suppresses Vite config loader warnings for Node-specific path resolvers. |
+
+### Configuration Rules:
+1. **Client-Side Variables:** Vite exposes environment variables to frontend code only when prefixed with `VITE_` (accessed via `import.meta.env.VITE_*`).
+2. **Secret Keys:** Sensitive server-side keys such as `GEMINI_API_KEY` should never be prefixed with `VITE_` to prevent leaking keys into the browser bundle.
+3. **Environment Cascade:**
+   - `.env.local` — Local overrides (git-ignored).
+   - `.env.production` — Loaded during `npm run build`.
+   - `.env.development` — Loaded during `npm run dev`.
+   - `.env` — Global fallback defaults.
+
+---
+
+## Brief API Documentation
+
+While the frontend is a self-contained Single-Page Application (SPA) with offline in-memory data, the project is architected with clear schemas and endpoints for backend integration.
+
+### Core Data Models
+
+#### 1. Quote Request Payload (`QuoteRequestPayload`)
+```typescript
+interface QuoteRequestPayload {
+  name: string;        // Full name of the client (Required, non-empty)
+  email: string;       // Valid RFC 5322 email string (Required)
+  subject: string;     // Inquiry topic or pre-filled service name
+  department: string;  // e.g. "Business Department", "Engineering", "Billing"
+  message: string;     // Project scope (Required, min 10 characters)
+}
+```
+
+#### 2. Project Item (`ProjectItem`)
+```typescript
+interface ProjectItem {
+  id: string;
+  title: string;
+  category: 'Building' | 'Construction' | 'Road Construction' | 'Maintenance' | 'Architecture';
+  image: string;
+  client?: string;
+  location?: string;
+  duration?: string;
+  description: string;
+}
+```
+
+#### 3. Service Specification Item (`ServiceItem`)
+```typescript
+interface ServiceItem {
+  id: string;
+  title: string;
+  icon: string;
+  excerpt: string;
+  fullDescription: string;
+  specifications: string[];
+  deliverables: string[];
+}
+```
+
+---
+
+### Endpoints (Specification)
+
+#### `POST /api/quotes` — Submit Quote Request
+Submits client quote requests to the estimating team.
+
+- **Method:** `POST`
+- **Headers:** `Content-Type: application/json`
+- **Request Body:**
+  ```json
+  {
+    "name": "Arun Kumar",
+    "email": "arun@example.com",
+    "subject": "Road Construction — 5km Highway Paving",
+    "department": "Engineering Department",
+    "message": "We need a detailed quote for a 5km commercial asphalt paving project."
+  }
+  ```
+- **Validation Rules:**
+  - `name`: Must be trimmed and not empty.
+  - `email`: Regex validated (`^[^\s@]+@[^\s@]+\.[^\s@]+$`).
+  - `message`: Minimum length of 10 characters.
+- **Success Response (`201 Created` / `200 OK`):**
+  ```json
+  {
+    "success": true,
+    "quoteId": "QTE-2026-8942",
+    "message": "Your quote request has been received. An engineer will respond within 24 hours.",
+    "timestamp": "2026-11-21T10:52:00Z"
+  }
+  ```
+- **Error Response (`400 Bad Request`):**
+  ```json
+  {
+    "success": false,
+    "errors": {
+      "email": "Please provide a valid email address.",
+      "message": "Please describe your project scope (at least 10 characters)."
+    }
+  }
+  ```
+
+---
+
+#### `POST /api/ai/estimate` — Gemini AI Preliminary Estimator (Optional)
+Generates preliminary timeline and milestone breakdowns using Google Gemini SDK (`@google/genai`).
+
+- **Method:** `POST`
+- **Headers:** `Content-Type: application/json`
+- **Request Body:**
+  ```json
+  {
+    "serviceCategory": "Building Engineering",
+    "projectScope": "3-story commercial office building with 15,000 sq ft floor area.",
+    "timelineMonths": 12
+  }
+  ```
+- **Success Response (`200 OK`):**
+  ```json
+  {
+    "phases": [
+      { "phase": "01 Site Planning & Permits", "estimatedWeeks": 4 },
+      { "phase": "02 Foundation & Structural Framing", "estimatedWeeks": 16 },
+      { "phase": "03 MEP & Interior Finishes", "estimatedWeeks": 20 }
+    ],
+    "disclaimer": "Preliminary AI assessment. Subject to physical survey and blueprint review."
+  }
+  ```
+
+---
+
+## Project Structure
+```text
+xtra-construction/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml            # Automated GitHub Pages CI/CD workflow
+├── src/
+│   ├── assets/
+│   │   └── images/ref/           # Local architectural images and brand assets
+│   ├── components/
+│   │   ├── AboutSection.tsx      # Company story, credentials, and checklist
+│   │   ├── DreamBanner.tsx       # Full-width architectural banner with CTA
+│   │   ├── FeaturesFlipCards.tsx # 3D hover/tap interactive flip cards
+│   │   ├── Header.tsx            # Sticky navigation, search, and mobile drawer
+│   │   ├── HeroSlider.tsx        # 2-slide hero showcase with video modal trigger
+│   │   ├── Modals.tsx            # Lightboxes, search overlays, and service specs
+│   │   ├── PartnersAndFooter.tsx # Partner emblem carousel, footer links
+│   │   ├── ProcessSection.tsx    # 3-step construction execution timeline
+│   │   ├── ProjectsSection.tsx   # Filterable 8-project portfolio gallery
+│   │   ├── QuoteSection.tsx      # Validated quote submission form
+│   │   ├── SafeImage.tsx         # Image loading fallback wrapper
+│   │   ├── ServicesSection.tsx   # Elevated 3-column service cards
+│   │   └── TestimonialsSection.tsx # Client reviews carousel
+│   ├── data/
+│   │   └── constructionData.ts   # Centralized data model and static content
+│   ├── App.tsx                   # Main layout container
+│   ├── index.css                 # Tailwind v4 import and custom 3D utilities
+│   └── main.tsx                  # React DOM entry point
+├── .env.example                  # Template for environment configuration
+├── .gitignore                    # Git exclusions (node_modules, dist, .env)
+├── index.html                    # HTML entry point with Google Fonts
+├── package.json                  # Dependencies and build scripts
+├── tsconfig.json                 # TypeScript compiler configuration
+└── vite.config.ts                # Vite config with relative base & asset sync
+```
+
+---
 
 ## Deployment Instructions
-1. Run `npm install` to install dependencies.
-2. Run `npm run build` to produce the static `dist/` directory.
-3. Deploy the `dist/` directory to any static hosting provider (Cloud Run static server, Vercel, Netlify, Cloudflare Pages, or Nginx), or preview locally via `npm run preview`.
 
-## Interactive Features Implemented
-- **Top Utility Bar & Sticky Header:** Smooth section scrolling, dropdown section navigation, mobile drawer menu, and live site search modal filtering services and projects.
-- **Hero Carousel:** 2-slide full-width showcase with slide indicators, directional arrows, smooth scroll CTAs, and an interactive Company Capabilities Showreel modal.
-- **3D Feature Flip Cards:** Hover, tap, and keyboard-accessible (`Enter`/`Space`) 3D flip cards (`Building Engineering`, `Safety First`, `Road Construction`) with specification modals.
-- **About & Services:** Asymmetric yellow-backed photo composition, capability checklist, and 3 elevated service cards (`Building`, `Road Construction`, `Maintenance`) with interactive technical detail modals.
-- **Process Timeline:** 3-stage construction workflow (`01 Agency / Bidding`, `02 Construction`, `03 Project Execution`) with protruding numeral badges.
-- **Filterable Project Portfolio & Lightbox:** 8-project responsive grid filterable by category (`All`, `Building`, `Construction`, `Road Construction`, `Maintenance`, `Architecture`) with a case-study lightbox and next/previous navigation.
-- **Validated Quote Request Form:** Client-side validation for required name, email format, and message length, department selection, pre-filled subject support from service/project modals, and instant confirmation feedback.
-- **Testimonials & Footer:** Interactive 3-client quote carousel with overlapping portrait frame, partner strip, and scroll-to-top footer controls.
-
-## Assumptions
-- All imagery is bundled locally in `src/assets/images/` rather than hotlinking external WordPress demo URLs so assets load reliably offline or in hermetic sandboxes.
-- The quote request form and search overlay operate purely client-side without requiring an external WordPress/Contact Form 7 backend.
-
-## Known Limitations
-- Because no backend database or SMTP relay is attached, submitting the quote request form validates inputs and displays a client-side confirmation state rather than dispatching a live email.
-- The hero "Watch video" button opens an interactive engineering overview modal rather than streaming an external third-party video embed.
-"# Xtra-construction" 
+### GitHub Pages (Automated with GitHub Actions)
+1. Push your changes to the `main` branch.
+2. In your GitHub repository:
+   - Go to **Settings > Pages**.
+   - Under **Build and deployment > Source**, select **GitHub Actions**.
+3. The `.github/workflows/deploy.yml` workflow will automatically build and publish the site.
+4. Access the live URL: `https://<username>.github.io/<repo-name>/`.
